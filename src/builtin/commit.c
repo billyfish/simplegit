@@ -61,7 +61,29 @@ int cmd_commit(git_repository *repo, int argc, char **argv)
 
 	for (i=1;i<argc;i++)
 	{
-		if (!strcmp(argv[i],"-m"))
+		if (!strcmp(argv[i],"-a"))
+		{
+			/* get all modified or deleted files but not untracked ones */
+			git_strarray paths = { 0 };
+
+			int i = get_modified_and_deleted_files (repo, &paths, "add");
+
+			if (paths.count)
+			{
+				/* send a request to the add command with a list of these files */
+				int add_rc = cmd_add (repo, paths.count, paths.strings);
+
+				if (add_rc != EXIT_SUCCESS)
+				{
+					fprintf (stderr, "Failed to add modified and delete files\n");
+					goto out;
+				}
+
+				git_strarray_free (&paths);
+			}
+
+		}
+		else if (!strcmp(argv[i],"-m"))
 		{
 			if (++i < argc)
 			{

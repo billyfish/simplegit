@@ -9,7 +9,14 @@
 #include "git-support.h"
 #include "utils.h"
 
+#include "git2/status.h"
+#include "common.h"
+
 #define GIT_STATUS_WT (GIT_STATUS_WT_MODIFIED|GIT_STATUS_WT_NEW|GIT_STATUS_WT_TYPECHANGE|GIT_STATUS_WT_DELETED)
+
+
+
+
 
 /**
  * The function that is invoked for each status entry. It prints out the
@@ -173,9 +180,96 @@ int cmd_status(git_repository *repo, int argc, char **argv)
 		goto out;
 
 	printf("#\n");
+
+
+
+	//get_modified_and_deleted_files (repo);
+
 	rc = EXIT_SUCCESS;
 out:
 	if (err) libgit_error();
 	if (head_ref) git_reference_free(head_ref);
 	return rc;
 }
+
+
+int get_modified_and_deleted_files (git_repository *repo, git_strarray *updated_paths, const char *command)
+{
+	int rc = EXIT_FAILURE;
+	git_status_list *status_list;
+	git_status_options opts = GIT_STATUS_OPTIONS_INIT;
+
+
+	if (git_status_list_new (&status_list, repo, &opts) == 0)
+	{
+		char **paths = NULL;
+		const size_t num_matched = git_status_list_entrycount (status_list);
+
+		if (command)
+		{
+			paths = calloc (command ? num_matched + 1 : num_matched, sizeof (char *));
+		}
+
+		if (paths)
+		{
+			size_t i;
+			size_t added = 0;
+			char **paths_tmp = paths;
+
+			if (command)
+				{
+					char *copied_command = strdup (command);
+
+		    	if (copied_command)
+		    	{
+		    		*paths_tmp = copied_command;
+		    		++ paths_tmp;
+		    	}
+		    	else
+					{
+		    		free (paths);
+		    		return rc;
+					}
+				}
+
+			for (i = 0; i < num_matched; ++ i)
+			{
+				const git_status_entry *entry = git_status_byindex (status_list, i);
+
+				if ((entry -> status & GIT_STATUS_WT_MODIFIED) ||
+						(entry -> status & GIT_STATUS_WT_DELETED) ||
+						(entry -> status & GIT_STATUS_WT_RENAMED))
+				{
+					git_diff_delta *delta = entry -> index_to_workdir;
+			    const char *old_path = delta -> old_file.path;
+			    const char *new_path = delta -> new_file.path;
+
+			    if (old_path)
+					{
+			    	char *copied_path = strdup (old_path);
+
+			    	if (copied_path)
+			    	{
+			    		*paths_tmp = copied_path;
+			    		++ paths_tmp;
+			    		++ added;
+			    	}
+					}
+			  }
+			}
+
+			updated_paths -> strings = paths;
+			updated_paths -> count = command ? added + 1 : added;
+
+			if (num_matched == added)
+			{
+				rc = EXIT_SUCCESS;
+			}
+		}
+
+		git_status_list_free (status_list);
+	}
+
+	return rc;
+}
+
