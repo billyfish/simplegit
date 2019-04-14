@@ -73,13 +73,13 @@ int cmd_commit(git_repository *repo, int argc, char **argv)
 				/* send a request to the add command with a list of these files */
 				int add_rc = cmd_add (repo, paths.count, paths.strings);
 
+				git_strarray_free (&paths);
+
 				if (add_rc != EXIT_SUCCESS)
 				{
 					fprintf (stderr, "Failed to add modified and delete files\n");
 					goto out;
 				}
-
-				git_strarray_free (&paths);
 			}
 
 		}
