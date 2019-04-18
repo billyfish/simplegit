@@ -1,5 +1,6 @@
 #include "commit.h"
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +13,10 @@
 #include "git-support.h"
 #include "git.h"
 #include "strbuf.h"
+#include "status.h"
+
+#include "add.h"
+#include "rm.h"
 
 struct mergehead_peel_payload
 {
@@ -64,22 +69,43 @@ int cmd_commit(git_repository *repo, int argc, char **argv)
 		if (!strcmp(argv[i],"-a"))
 		{
 			/* get all modified or deleted files but not untracked ones */
-			git_strarray paths = { 0 };
+			git_strarray add_command = { 0 };
+			git_strarray remove_command = { 0 };
 
-			int i = get_modified_and_deleted_files (repo, &paths, "add");
+			int rc = get_modified_and_deleted_files (repo, &add_command, &remove_command);
 
-			if (paths.count)
+			if (rc == EXIT_SUCCESS)
 			{
-				/* send a request to the add command with a list of these files */
-				int add_rc = cmd_add (repo, paths.count, paths.strings);
-
-				git_strarray_free (&paths);
-
-				if (add_rc != EXIT_SUCCESS)
+				if (add_command.count)
 				{
-					fprintf (stderr, "Failed to add modified and delete files\n");
-					goto out;
+					/* send a request to the add command with a list of these files */
+					int rc = cmd_add (repo, add_command.count, add_command.strings);
+
+					git_strarray_free (&add_command);
+
+					if (rc == EXIT_SUCCESS)
+					{
+						if (remove_command.count)
+						{
+							/* send a request to the add command with a list of these files */
+							rc = cmd_rm (repo, remove_command.count, remove_command.strings);
+
+							git_strarray_free (&remove_command);
+
+							if (rc != EXIT_SUCCESS)
+							{
+								fprintf (stderr, "Failed to delete files\n");
+								goto out;
+							}
+						}
+					}
+					else
+					{
+						fprintf (stderr, "Failed to add modified files\n");
+						goto out;
+					}
 				}
+
 			}
 
 		}

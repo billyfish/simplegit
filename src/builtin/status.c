@@ -16,6 +16,9 @@
 
 
 
+static int make_commmand (git_status_list *status_list, const size_t status_list_size, const char *command, const size_t num_elements, const git_status_t status, git_strarray *array);
+
+
 
 
 /**
@@ -193,79 +196,126 @@ out:
 }
 
 
-int get_modified_and_deleted_files (git_repository *repo, git_strarray *updated_paths, const char *command)
+static int make_commmand (git_status_list *status_list, const size_t status_list_size, const char *command, const size_t num_elements, const git_status_t status, git_strarray *array)
+{
+	int rc = EXIT_FAILURE;
+	char **tmp_paths = calloc (num_elements + 1, sizeof (char *));
+
+	if (tmp_paths)
+	{
+		size_t i;
+		size_t added = 0;
+		char **current_tmp_path = tmp_paths;
+
+		for (i = 0; i < status_list_size; ++ i)
+		{
+			const git_status_entry *entry = git_status_byindex (status_list, i);
+
+			if ((entry -> status & status) == status)
+			{
+				git_diff_delta *delta = entry -> index_to_workdir;
+				const char *old_path = delta -> old_file.path;
+				const char *new_path = delta -> new_file.path;
+				const char *path_to_use = NULL;
+
+				/*
+				 * Work out which path to use
+				 */
+				if (status & GIT_STATUS_WT_RENAMED)
+				{
+					if (strcmp (command, "add") == 0)
+					{
+						path_to_use = new_path;
+					}
+					else if (strcmp (command, "rm") == 0)
+					{
+						path_to_use = old_path;
+					}
+				}
+				else
+				{
+					path_to_use = old_path;
+				}
+
+				if (path_to_use)
+				{
+					char *copied_path_to_use = strdup (path_to_use);
+
+					if (copied_path_to_use)
+					{
+						*current_tmp_path = copied_path_to_use;
+						++ current_tmp_path;
+						++ added;
+					}
+				}
+			}
+
+		}
+
+		/*
+		 * Did we get all of the files?
+		 */
+		if (added == num_elements)
+		{
+			array -> count = added;
+			array -> strings = tmp_paths;
+
+			rc = EXIT_SUCCESS;
+		}
+		else
+		{
+			free (tmp_paths);
+		}
+
+	}
+
+	return rc;
+}
+
+
+int get_modified_and_deleted_files (git_repository *repo, git_strarray *add_command, git_strarray *remove_command)
 {
 	int rc = EXIT_FAILURE;
 	git_status_list *status_list;
 	git_status_options opts = GIT_STATUS_OPTIONS_INIT;
 
-
 	if (git_status_list_new (&status_list, repo, &opts) == 0)
 	{
 		char **paths = NULL;
 		const size_t num_matched = git_status_list_entrycount (status_list);
+		size_t num_updated = 0;
+		size_t num_removed = 0;
+		size_t num_renamed = 0;
+		size_t i;
+		char **tmp_paths = NULL;
+		git_status_t status;
 
-		if (command)
+		/*
+		 * Start by getting the number of added, removed and renamed files
+		 */
+		for (i = 0; i < num_matched; ++ i)
 		{
-			paths = calloc (command ? num_matched + 1 : num_matched, sizeof (char *));
-		}
+			const git_status_entry *entry = git_status_byindex (status_list, i);
 
-		if (paths)
-		{
-			size_t i;
-			size_t added = 0;
-			char **paths_tmp = paths;
-
-			if (command)
-				{
-					char *copied_command = strdup (command);
-
-		    	if (copied_command)
-		    	{
-		    		*paths_tmp = copied_command;
-		    		++ paths_tmp;
-		    	}
-		    	else
-					{
-		    		free (paths);
-		    		return rc;
-					}
-				}
-
-			for (i = 0; i < num_matched; ++ i)
+			if (entry -> status & GIT_STATUS_WT_MODIFIED)
 			{
-				const git_status_entry *entry = git_status_byindex (status_list, i);
-
-				if ((entry -> status & GIT_STATUS_WT_MODIFIED) ||
-						(entry -> status & GIT_STATUS_WT_DELETED) ||
-						(entry -> status & GIT_STATUS_WT_RENAMED))
-				{
-					git_diff_delta *delta = entry -> index_to_workdir;
-			    const char *old_path = delta -> old_file.path;
-			    const char *new_path = delta -> new_file.path;
-
-			    if (old_path)
-					{
-			    	char *copied_path = strdup (old_path);
-
-			    	if (copied_path)
-			    	{
-			    		*paths_tmp = copied_path;
-			    		++ paths_tmp;
-			    		++ added;
-			    	}
-					}
-			  }
+				++ num_updated;
 			}
-
-			updated_paths -> strings = paths;
-			updated_paths -> count = command ? added + 1 : added;
-
-			if (num_matched == added)
+			else if (entry -> status & GIT_STATUS_WT_DELETED)
 			{
-				rc = EXIT_SUCCESS;
+				++ num_removed;
+			}
+			else if	(entry -> status & GIT_STATUS_WT_RENAMED)
+			{
+				++ num_renamed;
 			}
 		}
+
+		status = GIT_STATUS_WT_MODIFIED | GIT_STATUS_WT_RENAMED;
+		make_commmand (status_list, num_matched, "add", num_updated + num_renamed, status, add_command);
+
+		status = GIT_STATUS_WT_DELETED | GIT_STATUS_WT_RENAMED;
+		make_commmand (status_list, num_matched, "rm", num_updated + num_renamed, status, remove_command);
 
 		git_status_list_free (status_list);
 	}
