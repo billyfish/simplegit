@@ -23,14 +23,15 @@ sgit: libgit2 pthread
 		-DCMAKE_SYSTEM_NAME=AmigaOS\
 		-DCMAKE_C_COMPILER=$(COMPILER)\
 		-DCMAKE_C_FLAGS="\
-			-DUSE_SSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
+			-gstabs -DUSE_SSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
 			-fstack-usage -Wstack-usage=512\
 			"\
 		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/newlib/lib) -Wl,--gc-sections"\
 		-DAMIGA=1\
-		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga
+		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
+		-DUSE_HTTPS=OpenSSL
 	rm -f bin/sgit bin/sgit.debug
 	cd build-amiga/ && $(MAKE) VERBOSE=1
 	mv bin/sgit bin/sgit.debug
@@ -47,7 +48,7 @@ libgit2/build-amiga/libgit2.a: libgit-repo $(OPENSSL) pthread
 	cd libgit2/build-amiga && cmake ..\
 		-DCMAKE_SYSTEM_NAME=AmigaOS\
 		-DCMAKE_C_COMPILER=$(COMPILER)\
-		-DCMAKE_C_FLAGS="-DGIT_OPENSSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
+		-DCMAKE_C_FLAGS="-gstabs -DGIT_OPENSSL -D__USE_ISOC11=1 -DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-fstack-usage -Wstack-usage=512\
 			"\
@@ -56,8 +57,9 @@ libgit2/build-amiga/libgit2.a: libgit-repo $(OPENSSL) pthread
 		-DTHREADSAFE=OFF\
 		-DUSE_NSEC=OFF\
 		-DBUILD_CLAR=OFF\
-		-DBUILD_SHARED_LIBS=OFF
-	cd libgit2/build-amiga && $(MAKE)
+		-DBUILD_SHARED_LIBS=OFF\
+		-DUSE_HTTPS=OpenSSL
+	cd libgit2/build-amiga && $(MAKE) 
 	touch $@
 
 ####################################################

@@ -59,8 +59,8 @@ build-deps/SDK_53.24.lha-done:
 # AmiSSL dependency
 build-deps/amissl4-done: $(LHA)
 	mkdir -p build-deps/amissl4
-	cd build-deps/amissl4 && wget -N https://github.com/jens-maus/amissl/releases/download/4.2/AmiSSL-4.2.lha
-	cd build-deps/amissl4 && $(LHA) xf AmiSSL-4.2.lha
+	cd build-deps/amissl4 && wget -N https://github.com/jens-maus/amissl/releases/download/4.5/AmiSSL-4.5.lha
+	cd build-deps/amissl4 && $(LHA) xf AmiSSL-4.5.lha
 	touch $@
 
 ####################################################
@@ -81,8 +81,8 @@ $(LHA):
 .PHONY: libgit-repo
 libgit-repo:
 	# Git repo
-	git submodule init
-	git submodule update
+#	git submodule init
+#	git submodule update
 
 
 ####################################################
