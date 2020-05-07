@@ -79,11 +79,10 @@ $(LHA):
 	cd build-deps/lha/lha-1.14i.orig/ && make
 
 .PHONY: libgit-repo
-libgit-repo: libgit2
+libgit-repo:
 	# Git repo
 	git submodule init
 	git submodule update
-	git clone https://github.com/libgit2/libgit2.git
 
 ####################################################
 # Packaging

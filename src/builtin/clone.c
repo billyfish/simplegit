@@ -127,6 +127,9 @@ int do_clone(git_repository *repo, int argc, char **argv)
 
 			if (ret)
 				{
+#if LIBGIT2_OLD_VERSION
+					libgit_error();
+#else
 					const git_error *err = git_error_last ();
 
 					if (err)
@@ -137,6 +140,9 @@ int do_clone(git_repository *repo, int argc, char **argv)
 						{
 							printf("ERROR %d: no detailed info\n", ret);
 						}
+#endif
+
+
 				}
 			else if (cloned_repo)
 				{

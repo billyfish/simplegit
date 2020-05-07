@@ -34,7 +34,7 @@ int index_pack(git_repository *repo, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-#ifdef LIBGIT2_OLD_VERSION
+#if LIBGIT2_OLD_VERSION
 	index_res =git_indexer_new(&idx, ".", 0, NULL, NULL, NULL);
 #else
 	index_res =git_indexer_new(&idx, ".", 0, NULL, NULL);

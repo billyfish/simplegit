@@ -64,7 +64,7 @@ set(LIBS ${LIBS} git2.a pthread.a ${LIB_SHA1})
 link_directories(${LIBGIT2_BUILD_DIRECTORY})
 
 IF (AMIGA)
-	include_directories(${ROOT_DIRECTORY}/libgit2/deps/regex)
+	include_directories(${LIBGIT2_DIRECTORY}/deps/regex)
 	link_directories(${ROOT_DIRECTORY}/interim-openssl/openssl/repo/)
 	set(LIBS ${LIBS} ssl.a crypto.a)
 	set(LIBS ${LIBS} unix.a auto.a)
@@ -85,7 +85,11 @@ add_custom_target(git-test-suite COMMAND $(MAKE) all WORKING_DIRECTORY ${TESTS_D
 
 add_library(sgit-lib STATIC ${C_SOURCE_FILES})
 add_executable(sgit-bin ${EXECUTABLE_SOURCE_FILE})
-set_target_properties(sgit-bin PROPERTIES OUTPUT_NAME sgit-amiga)
+
+message(STATUS "name _${SGIT_AMIGA_NAME}_")
+
+set_target_properties(sgit-bin PROPERTIES OUTPUT_NAME ${SGIT_AMIGA_NAME})
+
 set_target_properties(sgit-bin PROPERTIES LINK_FLAGS -Wl,--cref,-M,-Map=sgit.map)
 add_dependencies(sgit-bin build_libgit2)
 target_link_libraries(sgit-bin sgit-lib ${LIBS})
