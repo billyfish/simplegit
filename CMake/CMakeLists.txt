@@ -29,7 +29,11 @@ IF (NOT LIBGIT2_BUILD_DIRECTORY_NAME)
 ENDIF()
 
 set(TESTS_DIRECTORY ${ROOT_DIRECTORY}/tests)
-set(LIBGIT2_DIRECTORY ${ROOT_DIRECTORY}/libgit2)
+
+IF (NOT LIBGIT2_DIRECTORY)
+	set(LIBGIT2_DIRECTORY ${ROOT_DIRECTORY}/libgit2)
+ENDIF()
+
 set(LIBGIT2_BUILD_DIRECTORY ${LIBGIT2_DIRECTORY}/${LIBGIT2_BUILD_DIRECTORY_NAME})
 set(BINARIES_DIRECTORY ${ROOT_DIRECTORY}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
@@ -81,7 +85,7 @@ add_custom_target(git-test-suite COMMAND $(MAKE) all WORKING_DIRECTORY ${TESTS_D
 
 add_library(sgit-lib STATIC ${C_SOURCE_FILES})
 add_executable(sgit-bin ${EXECUTABLE_SOURCE_FILE})
-set_target_properties(sgit-bin PROPERTIES OUTPUT_NAME sgit)
+set_target_properties(sgit-bin PROPERTIES OUTPUT_NAME sgit-amiga)
 set_target_properties(sgit-bin PROPERTIES LINK_FLAGS -Wl,--cref,-M,-Map=sgit.map)
 add_dependencies(sgit-bin build_libgit2)
 target_link_libraries(sgit-bin sgit-lib ${LIBS})

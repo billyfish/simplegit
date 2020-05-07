@@ -26,6 +26,7 @@ int index_pack(git_repository *repo, int argc, char **argv)
 	char hash[GIT_OID_HEXSZ + 1] = {0};
 	ssize_t read_bytes;
 	char buf[512];
+	int index_res;
 
 	repo = repo;
 	if (argc < 2) {
@@ -33,7 +34,13 @@ int index_pack(git_repository *repo, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (git_indexer_new(&idx, ".", 0, NULL, NULL) < 0) {
+#ifdef LIBGIT2_OLD_VERSION
+	index_res =git_indexer_new(&idx, ".", 0, NULL, NULL, NULL);
+#else
+	index_res =git_indexer_new(&idx, ".", 0, NULL, NULL);
+#endif
+
+	if (index_res < 0) {
 		puts("bad idx");
 		return -1;
 	}
