@@ -2,6 +2,10 @@
 # This is a all in one makefile for building SimpleGit for AmigaOS
 #
 
+
+LIBGIT2_DIR = libgit2
+LIBGIT2_OLD_VERSION = 0
+
 ####################################################
 
 .PHONY: all
@@ -27,24 +31,26 @@ sgit: libgit2 pthread
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
 			-fstack-usage -Wstack-usage=512\
-			"\
+			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)"\
 		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/newlib/lib) -Wl,--gc-sections"\
+		-DOPENSSL_ROOT_DIR=/home/billy/Projects/simplegit/interim-openssl/openssl/repo/\
 		-DAMIGA=1\
-		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga
-	rm -f bin/sgit bin/sgit.debug
+		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga \
+		-DLIBGIT2_DIRECTORY=$(shell readlink -f $(LIBGIT2_DIR))
+	rm -f bin/sgit-amiga bin/sgit-amiga.debug
 	cd build-amiga/ && $(MAKE) VERBOSE=1
-	mv bin/sgit bin/sgit.debug
-	ppc-amigaos-strip --strip-all --strip-unneeded-rel-relocs -R.comment -R.eh_frame -o bin/sgit bin/sgit.debug
+	mv bin/sgit-amiga bin/sgit-amiga.debug
+	ppc-amigaos-strip --strip-all --strip-unneeded-rel-relocs -R.comment -R.eh_frame -o bin/sgit-amiga bin/sgit-amiga.debug
 
 ####################################################
 # The libgit2 dependency
 .PHONY: libgit2
-libgit2: libgit2/build-amiga/libgit2.a
+libgit2: $(LIBGIT2_DIR)/build-amiga/libgit2.a
 
-libgit2/build-amiga/libgit2.a: libgit-repo $(OPENSSL) pthread
+$(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
 	# libgit2
-	mkdir -p libgit2/build-amiga
-	cd libgit2/build-amiga && cmake ..\
+	mkdir -p $(LIBGIT2_DIR)/build-amiga
+	cd $(LIBGIT2_DIR)/build-amiga && cmake ..\
 		-DCMAKE_SYSTEM_NAME=AmigaOS\
 		-DCMAKE_C_COMPILER=$(COMPILER)\
 		-DCMAKE_C_FLAGS="-DGIT_OPENSSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
@@ -56,8 +62,10 @@ libgit2/build-amiga/libgit2.a: libgit-repo $(OPENSSL) pthread
 		-DTHREADSAFE=OFF\
 		-DUSE_NSEC=OFF\
 		-DBUILD_CLAR=OFF\
-		-DBUILD_SHARED_LIBS=OFF
-	cd libgit2/build-amiga && $(MAKE)
+		-DOPENSSL_ROOT_DIR=/home/billy/Projects/simplegit/interim-openssl/openssl/repo/\
+		-DBUILD_SHARED_LIBS=OFF\
+		-D__amigaos4__=1
+	cd $(LIBGIT2_DIR)/build-amiga && $(MAKE)
 	touch $@
 
 ####################################################

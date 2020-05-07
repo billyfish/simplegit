@@ -7,14 +7,14 @@ LIBGIT2_BUILD_DIRECTORY=${LIBGIT2_DIRECTORY}/build
 CMAKE_MAKEFILE=${BUILD_DIRECTORY}/Makefile
 CMAKE_FILE_LISTS=${CMAKE_DIRECTORY}/CMakeLists.txt
 BIN_DIRECTORY=$(abspath .)/bin
-GIT2=${BIN_DIRECTORY}/sgit
+GIT2=${BIN_DIRECTORY}/sgit_linux
 
 COMMITS := $(shell git rev-list HEAD --count)
 
 main: dirs ${CMAKE_MAKEFILE}
 	@rm -rf "${GIT2}";
 	@${MAKE} -C "${BUILD_DIRECTORY}";
-	cd "${BIN_DIRECTORY}" && ln -sf sgit git-init
+	cd "${BIN_DIRECTORY}" && ln -sf sgit_linux git-init
 
 .PHONY: dirs
 dirs:
