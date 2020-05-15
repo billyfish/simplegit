@@ -44,14 +44,14 @@ libssh2:
 .PHONY: pthread
 pthread: $(PTHREAD)
 
-$(PTHREAD): build-deps/SDK_53.24.lha-done $(LHA)
-	cd build-deps && $(LHA) xf SDK_53.24.lha
-	cd build-deps && $(LHA) xf SDK_Install/pthread.lha
+$(PTHREAD): build-deps/SDK_53.30.lha-done $(LHA)
+	cd build-deps && $(LHA) xf SDK_53.30.lha
+	cd build-deps && $(LHA) xf SDK_Install/pthreads-53.11.lha
 	touch $@
 
-build-deps/SDK_53.24.lha-done:
+build-deps/SDK_53.30.lha-done:
 	mkdir -p build-deps
-	wget "http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=69&amp;Itemid=63" -O build-deps/SDK_53.24.lha
+	wget "http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=82&amp;Itemid=63" -O build-deps/SDK_53.30.lha
 	touch $@
 
 

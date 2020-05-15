@@ -28,37 +28,67 @@ int cmd_push(git_repository *repo, int argc, char **argv)
 
 	git_remote *r = NULL;
 
-	for (i=1;i<argc;i++)
+
+	if (argc > 1)
 	{
-		if (argv[i][0] == '-')
+		for (i=1;i<argc;i++)
 		{
-			fprintf(stderr,"Unknown option \"%s\"\n",argv[i]);
-			goto out;
-		}
-
-		if (r)
-		{
-			git_reference *ref;
-
-			if (refs.count) {
-				fprintf(stderr, "USAGE: %s <remote> <refspec>\n", argv[0]);
+			if (argv[i][0] == '-')
+			{
+				fprintf(stderr,"Unknown option \"%s\"\n",argv[i]);
 				goto out;
 			}
 
-			if (!git_reference_dwim(&ref, repo, argv[i]))
+			if (r)
 			{
-				ref_fullname = strdup(git_reference_name(ref));
-				refs.strings = &ref_fullname;
-				git_reference_free(ref);
+				git_reference *ref;
+
+				if (refs.count) {
+					fprintf(stderr, "USAGE: %s <remote> <refspec>\n", argv[0]);
+					goto out;
+				}
+
+				if (!git_reference_dwim(&ref, repo, argv[i]))
+				{
+					ref_fullname = strdup(git_reference_name(ref));
+					refs.strings = &ref_fullname;
+					git_reference_free(ref);
+				} else
+				{
+					refs.strings = &argv[i];
+				}
+				refs.count = 1;
 			} else
 			{
-				refs.strings = &argv[i];
+				if ((err = git_remote_lookup(&r,repo,argv[i])) != GIT_OK)
+					goto out;
 			}
-			refs.count = 1;
-		} else
+		}
+
+	}
+	else
+	{
+		/* Get current remote reference */
+		git_reference *ref = NULL;
+
+		if ((err = git_repository_head (&ref, repo)) == GIT_OK)
 		{
-			if ((err = git_remote_lookup(&r,repo,argv[i])) != GIT_OK)
-				goto out;
+			const char *name = git_reference_shorthand (ref);
+			printf ("ref: \"%s\"\n", name);
+
+			name = git_repository_get_namespace (repo);
+			printf ("ns: \"%s\"\n", name ? name : "<NULL>");
+
+			name = git_repository_path (repo);
+			printf ("path: \"%s\"\n", name ? name : "<NULL>");
+
+
+			git_reference_free (ref);
+		}
+		else
+		{
+			fprintf(stderr,"Failed to get default remote \"origin\"!\n");
+			goto out;
 		}
 	}
 
