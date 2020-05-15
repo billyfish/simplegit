@@ -39,9 +39,11 @@ sgit: libgit2 pthread
 			-gstabs -DUSE_SSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
-			-fstack-usage -Wstack-usage=512\
-			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)"\
-		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/newlib/lib) -Wl,--gc-sections"\
+			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
+			-DAMIGA\
+			-mcrt=clib2\
+			"\
+		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2"\
 		-DOPENSSL_ROOT_DIR=/home/billy/Projects/simplegit/interim-openssl/openssl/repo/\
 		-DAMIGA=1\
 		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
@@ -68,7 +70,9 @@ $(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
 		-DCMAKE_C_FLAGS="-gstabs -DGIT_OPENSSL -D__USE_ISOC11=1 -DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo/)\
 			-I$(shell readlink -f interim-openssl/openssl/repo/include/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
-			-fstack-usage -Wstack-usage=512\
+			-mcrt=clib2\
+			-DNO_STRNLEN\
+			-D__NO_NET_API\
 			"\
 		-DAMIGA=1\
 		-DUSE_SSH=OFF\
@@ -94,7 +98,7 @@ clean-libgit2:
 .PHONY: clean-sgit
 clean-sgit:
 	rm -Rf build-amiga
-	
+
 .PHONY: zip
 zip:
 	zip -r sgit.zip bin

@@ -29,7 +29,7 @@ openssl: $(OPENSSL)
 $(OPENSSL):
 	(cd interim-openssl && git pull) || \
 	    (git clone https://github.com/sba1/interim-openssl.git)
-	$(MAKE) -C interim-openssl checkout build CC=ppc-amigaos-gcc
+	$(MAKE) -C interim-openssl checkout build-clib2 CC=ppc-amigaos-gcc
 
 ####################################################
 # The libssh2 dependency needed by libgit2, sources are compiled
