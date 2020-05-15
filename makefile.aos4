@@ -12,6 +12,11 @@ else
 	LIBGIT2_OLD_VERSION = 0
 endif
 
+ifeq ($(C_RUNTIME),clib2)
+	RUNTIME_LIB = "-mcrt=clib2"
+else
+	RUNTIME_LIB =
+endif
 
 
 
@@ -41,10 +46,10 @@ sgit: libgit2 pthread
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
 			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
 			-DAMIGA\
-			-mcrt=clib2\
+			$(RUNTIME_LIB)\
 			"\
 		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2"\
-		-DOPENSSL_ROOT_DIR=/home/billy/Projects/simplegit/interim-openssl/openssl/repo/\
+		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo)/\
 		-DAMIGA=1\
 		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
 		-DUSE_HTTPS=OpenSSL\
@@ -70,9 +75,8 @@ $(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
 		-DCMAKE_C_FLAGS="-gstabs -DGIT_OPENSSL -D__USE_ISOC11=1 -DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo/)\
 			-I$(shell readlink -f interim-openssl/openssl/repo/include/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
-			-mcrt=clib2\
+			$(RUNTIME_LIB)\
 			-DNO_STRNLEN\
-			-D__NO_NET_API\
 			"\
 		-DAMIGA=1\
 		-DUSE_SSH=OFF\

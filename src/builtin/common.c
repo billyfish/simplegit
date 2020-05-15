@@ -21,6 +21,8 @@
 # define UNUSED(x) x
 #endif
 
+
+
 int cred_acquire_cb(git_cred **out,
 		const char *url,
 		const char * UNUSED(username_from_url),
