@@ -61,7 +61,10 @@ void print_commit(git_commit *wcommit, const char *fmt)
 	cauth = git_commit_author(wcommit);
 	tt = cauth->when.time + cauth->when.offset*60;
 	tm = *gmtime(&tt);
+
+#ifndef AMIGA
 	tm.tm_gmtoff = cauth->when.offset*60;
+#endif
 	strftime(t,sizeof(t),"%a %d %b %Y %T %z",&tm);
 
 	while ((c = *fmt++))
