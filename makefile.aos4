@@ -52,7 +52,7 @@ sgit: libgit2 pthread
 		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2"\
 		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo)/\
 		-DAMIGA=1\
-		-DLIBGIT2_BUILD_DIRECTORY_NAME=$(LIBGIT2_DIR)/build-amiga\
+		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
 		-DUSE_HTTPS=OpenSSL\
 		-DSGIT_AMIGA_NAME=$(SGIT_NAME)\
 		-DLIBGIT2_DIRECTORY=$(shell readlink -f $(LIBGIT2_DIR)) \
