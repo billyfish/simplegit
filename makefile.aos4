@@ -13,7 +13,7 @@ else
 endif
 
 ifeq ($(C_RUNTIME),clib2)
-	RUNTIME_LIB = "-mcrt=clib2"
+	RUNTIME_LIB = -mcrt=clib2
 else
 	RUNTIME_LIB =
 endif
@@ -47,11 +47,12 @@ sgit: libgit2 pthread
 			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
 			-DAMIGA\
 			$(RUNTIME_LIB)\
+			-D_DEBUG=1\
 			"\
 		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2"\
 		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo)/\
 		-DAMIGA=1\
-		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
+		-DLIBGIT2_BUILD_DIRECTORY_NAME=$(LIBGIT2_DIR)/build-amiga\
 		-DUSE_HTTPS=OpenSSL\
 		-DSGIT_AMIGA_NAME=$(SGIT_NAME)\
 		-DLIBGIT2_DIRECTORY=$(shell readlink -f $(LIBGIT2_DIR)) \
@@ -77,6 +78,8 @@ $(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			$(RUNTIME_LIB)\
 			-DNO_STRNLEN\
+			-D_DEBUG=1\
+			-DAMIGA\
 			"\
 		-DAMIGA=1\
 		-DUSE_SSH=OFF\
