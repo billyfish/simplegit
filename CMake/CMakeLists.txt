@@ -20,7 +20,8 @@ include_directories(
 	${SRC_DIRECTORY}/common
 	${SRC_DIRECTORY}/common/utils
 	${SRC_DIRECTORY}/common/commands
-	${SRC_DIRECTORY}/builtin
+	#${SRC_DIRECTORY}/builtin
+	${LIBGIT2_DIRECTORY}/examples
 	#place new include directories here
 )
 

@@ -3,6 +3,14 @@
 #
 
 
+ifeq ($(BUILD),release)
+	EXTRA_C_FLAGS="-O3"
+	SUFFIX=release
+else
+	EXTRA_C_FLAGS=-gstabs -O0 -D_DEBUG=1
+	SUFFIX=
+endif
+
 ifeq ($(LIBGIT2_DIR),)
 	SGIT_NAME =sgit-amiga
 	LIBGIT2_DIR = libgit2
@@ -41,15 +49,14 @@ sgit: libgit2 pthread
 		-DCMAKE_SYSTEM_NAME=AmigaOS\
 		-DCMAKE_C_COMPILER=$(COMPILER)\
 		-DCMAKE_C_FLAGS="\
-			-gstabs -DUSE_SSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
+			$(EXTRA_C_FLAGS) -DUSE_SSL -I$(shell readlink -f interim-openssl/openssl/repo/include/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
 			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
 			-DAMIGA\
 			$(RUNTIME_LIB)\
-			-D_DEBUG=1\
 			"\
-		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2"\
+		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2 $(EXTRA_C_FLAGS)"\
 		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo)/\
 		-DAMIGA=1\
 		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
@@ -73,12 +80,11 @@ $(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
 	cd $(LIBGIT2_DIR)/build-amiga && cmake ..\
 		-DCMAKE_SYSTEM_NAME=AmigaOS\
 		-DCMAKE_C_COMPILER=$(COMPILER)\
-		-DCMAKE_C_FLAGS="-gstabs -DGIT_OPENSSL -D__USE_ISOC11=1 -DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo/)\
+		-DCMAKE_C_FLAGS="$(EXTRA_C_FLAGS)  -DGIT_OPENSSL -D__USE_ISOC11=1 -DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo/)\
 			-I$(shell readlink -f interim-openssl/openssl/repo/include/)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			$(RUNTIME_LIB)\
 			-DNO_STRNLEN\
-			-D_DEBUG=1\
 			-DAMIGA\
 			"\
 		-DAMIGA=1\
