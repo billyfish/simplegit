@@ -49,14 +49,14 @@ list(REMOVE_ITEM C_SOURCE_FILES ${EXECUTABLE_SOURCE_FILE})
 SET(CMAKE_C_FLAGS "-Wno-missing-field-initializers -std=gnu99 -Wall -Wextra ${CMAKE_C_FLAGS}")
 
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
-set(CMAKE_C_FLAGS_RELEASE "-O2")
+set(CMAKE_C_FLAGS_RELEASE "-O3")
 
 #include libssl
 find_package(OpenSSL)
 add_definitions(-DOPENSSL_SHA1 -DNO_OPENSSL)
 
-set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 include_directories(${INCLUDE_DIRECTORIES})
 include_directories(${LIBGIT2_DIRECTORY}/include)
