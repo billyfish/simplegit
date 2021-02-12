@@ -15,7 +15,7 @@ or lg2
 The default 
 
  * **C_RUNTIME**: Setting this to *clib2* will link the tools using clib2 rather than newlib.
- * **LIBGIT2_DIR**: By default, the tools will use the direc```tory *libgit2* within this directory.
+ * **LIBGIT2_DIR**: By default, the tools will use the directory *libgit2* within this directory.
 With this directive, you can specify a different libgit2 directory to use.
  * **USE_AMISSL**: Setting this to *1* will build libgit2 using AmiSSL for the SSL parts rather 
 than a statically-linked OpenSSL.
@@ -37,7 +37,7 @@ Currently the clib2 version appears to provide more unix compatibility so I tend
 You can get this from 
 [https://github.com/billyfish/libgit2](https://github.com/billyfish/libgit2). You can check out 
 this repo to anyhere you wish except for libgit2 within this simplegit directory as that is 
-where the original one used by simplegit will be placed. My fork of Libgit2 has the changes for 
+where the original one used by simplegit will be placed. My fork of libgit2 has the changes for 
 the Amiga version in a separate branch so you will need to switch to the *amigaos4_port* branch 
 to get it. Once you have checked out this repo, switch to this branch by running
 
