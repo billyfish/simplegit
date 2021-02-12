@@ -19,7 +19,7 @@ int cmd_version(git_repository *repo, int argc, char **argv)
 
 	git_libgit2_version(&major, &minor, &rev);
 	printf("sgit version 0.%s\n", SIMPLEGIT_REVISION_STRING);
-	printf("using libgit2 %d.%d.%d and %s\n", major, minor, rev, SSLeay_version(SSLEAY_VERSION));
+	printf("using libgit2 %d.%d.%d\n", major, minor, rev /*, SSLeay_version(SSLEAY_VERSION) */ );
 
 	return EXIT_SUCCESS;
 }

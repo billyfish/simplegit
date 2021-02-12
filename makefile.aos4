@@ -22,9 +22,27 @@ endif
 
 ifeq ($(C_RUNTIME),clib2)
 	RUNTIME_LIB = -mcrt=clib2
+	RUNTIME_LIB_PATH = -L$(shell readlink -f build-deps/Local/clib2/lib)
+	AUTOLIB = 
 else
 	RUNTIME_LIB =
+	RUNTIME_LIB_PATH = -L$(shell readlink -f build-deps/Local/newlib/lib)
+	AUTOLIB = -lauto 
 endif
+
+
+OPENSSL_ROOT_DIR = $(shell readlink -f interim-openssl/openssl/repo/)
+
+ifeq ($(USE_AMISSL),1)
+	SSL_ROOT_DIR = $(shell readlink -f AmiSSL/Developer/)
+	SSL_C_FLAGS = -DAMISSL -I$(SSL_ROOT_DIR)/include
+	CMAKE_AMISSL = -DAMISSL
+else
+	SSL_ROOT_DIR = $(shell readlink -f interim-openssl/openssl/repo/)
+	SSL_C_FLAGS = -DOPENSSL_ROOT_DIR=$(SSL_ROOT_DIR) -I$(SSL_ROOT_DIR)/include/
+	CMAKE_AMISSL = 
+endif
+
 
 
 
@@ -50,21 +68,22 @@ sgit: libgit2 pthread
 		-DCMAKE_C_COMPILER=$(COMPILER)\
 		-DCMAKE_C_FLAGS="\
 			$(EXTRA_C_FLAGS) -DUSE_SSL\
-			-I$(shell readlink -f AmiSSL/Developer/include)\
+			$(SSL_C_FLAGS)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
 			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
 			-DAMIGA\
 			$(RUNTIME_LIB)\
 			"\
-		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2 $(EXTRA_C_FLAGS)"\
-		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo)/\
+		-DCMAKE_EXE_LINKER_FLAGS="$(RUNTIME_LIB_PATH) -Wl,--gc-sections $(RUNTIME_LIB) $(EXTRA_C_FLAGS)"\
+		-DOPENSSL_ROOT_DIR=$(SSL_ROOT_DIR)\
 		-DAMIGA=1\
 		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
 		-DUSE_HTTPS=OpenSSL\
 		-DSGIT_AMIGA_NAME=$(SGIT_NAME)\
 		-DLIBGIT2_DIRECTORY=$(shell readlink -f $(LIBGIT2_DIR)) \
-		-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)
+		-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
+		$(CMAKE_AMISSSL)
 	rm -f bin/$(SGIT_NAME) bin/$(SGIT_NAME).debug
 	cd build-amiga/ && $(MAKE) VERBOSE=1
 	mv bin/$(SGIT_NAME) bin/$(SGIT_NAME).debug
@@ -83,22 +102,22 @@ lg2_git: libgit2 pthread
 		-DCMAKE_C_COMPILER=$(COMPILER)\
 		-DCMAKE_C_FLAGS="\
 			$(EXTRA_C_FLAGS) -DUSE_SSL\
-			-DAMISSL\
-			-I$(shell readlink -f AmiSSL/Developer/include)\
+			$(SSL_C_FLAGS)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			-imacros $(shell readlink -f .)/build-amiga/sgit-version.h\
 			-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
 			-DAMIGA\
 			$(RUNTIME_LIB)\
 			"\
-		-DCMAKE_EXE_LINKER_FLAGS="-L$(shell readlink -f build-deps/Local/clib2/lib) -Wl,--gc-sections -mcrt=clib2 $(EXTRA_C_FLAGS)"\
-		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo)/\
+		-DCMAKE_EXE_LINKER_FLAGS="$(RUNTIME_LIB_PATH) -Wl,--gc-sections $(RUNTIME_LIB) $(EXTRA_C_FLAGS)"\
+		-DOPENSSL_ROOT_DIR=$(SSL_ROOT_DIR)\
 		-DAMIGA=1\
 		-DLIBGIT2_BUILD_DIRECTORY_NAME=build-amiga\
 		-DUSE_HTTPS=OpenSSL\
 		-DSGIT_AMIGA_NAME=$(SGIT_NAME)\
 		-DLIBGIT2_DIRECTORY=$(shell readlink -f $(LIBGIT2_DIR)) \
-		-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)
+		-DLIBGIT2_OLD_VERSION=$(LIBGIT2_OLD_VERSION)\
+		$(CMAKE_AMISSSL)
 	rm -f bin/$(SGIT_NAME) bin/$(SGIT_NAME).debug
 	cd build-amiga/ && $(MAKE) VERBOSE=1
 	mv bin/$(SGIT_NAME) bin/$(SGIT_NAME).debug
@@ -110,16 +129,14 @@ lg2_git: libgit2 pthread
 .PHONY: libgit2
 libgit2: libgit-repo $(LIBGIT2_DIR)/build-amiga/libgit2.a
 
-$(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
+$(LIBGIT2_DIR)/build-amiga/libgit2.a: # $(OPENSSL) pthread
 	# libgit2
 	mkdir -p $(LIBGIT2_DIR)/build-amiga
 	cd $(LIBGIT2_DIR)/build-amiga && cmake ..\
 		-DCMAKE_SYSTEM_NAME=AmigaOS\
 		-DCMAKE_C_COMPILER=$(COMPILER)\
 		-DCMAKE_C_FLAGS="$(EXTRA_C_FLAGS) -DGIT_OPENSSL -D__USE_ISOC11=1\
-			-DOPENSSL_ROOT_DIR=$(shell readlink -f AmiSSL/Developer/include)\
-			-DAMISSL\
-			-I$(shell readlink -f AmiSSL/Developer/include)\
+			$(SSL_C_FLAGS)\
 			-I$(shell readlink -f build-deps/Local/common/include)\
 			$(RUNTIME_LIB)\
 			-DNO_STRNLEN\
@@ -132,7 +149,8 @@ $(LIBGIT2_DIR)/build-amiga/libgit2.a:  $(OPENSSL) pthread
 		-DBUILD_CLAR=OFF\
 		-DBUILD_SHARED_LIBS=OFF\
 		-DOPENSSL_ROOT_DIR=$(shell readlink -f interim-openssl/openssl/repo/)\
-		-DUSE_HTTPS=OpenSSL
+		-DUSE_HTTPS=OpenSSL\
+		$(CMAKE_AMISSSL)
 	cd $(LIBGIT2_DIR)/build-amiga && $(MAKE)
 	touch $@
 

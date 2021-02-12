@@ -20,8 +20,11 @@ include_directories(
 	${SRC_DIRECTORY}/common
 	${SRC_DIRECTORY}/common/utils
 	${SRC_DIRECTORY}/common/commands
-	#${SRC_DIRECTORY}/builtin
-	${LIBGIT2_DIRECTORY}/examples
+	IF (SGIT)
+		${SRC_DIRECTORY}/builtin
+	ELSE ()
+		${LIBGIT2_DIRECTORY}/examples
+	ENDIF ()
 	#place new include directories here
 )
 
@@ -66,14 +69,18 @@ link_directories(${LIBGIT2_BUILD_DIRECTORY})
 
 IF (AMIGA)
 	include_directories(${LIBGIT2_DIRECTORY}/deps/regex)
-	link_directories(${ROOT_DIRECTORY}/interim-openssl/openssl/repo/)
-	set(LIBS ${LIBS} ssl.a crypto.a)
-#	set(LIBS ${LIBS} unix.a auto.a)
-	set(LIBS ${LIBS} unix.a c.a)
-ELSE()
-	set(LIBS ${LIBS} ssl crypto)
-ENDIF()
 
+	IF (NOT AMISSL)
+		link_directories(${ROOT_DIRECTORY}/interim-openssl/openssl/repo/)
+		set(LIBS ${LIBS} ssl.a crypto.a)
+	ENDIF ()
+
+	IF (CLIB2)	
+		set(LIBS ${LIBS} unix.a c.a)
+	ELSE ()
+		set(LIBS ${LIBS} unix.a auto.a)
+	ENDIF ()
+ENDIF ()
 # The extra git-test target involving the git test suite
 add_custom_target(git-test-suite COMMAND $(MAKE) all WORKING_DIRECTORY ${TESTS_DIRECTORY} DEPENDS sgit-bin)
 #add_custom_target(
